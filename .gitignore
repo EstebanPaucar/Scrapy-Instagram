@@ -1,0 +1,23 @@
+# Credenciales y sesión - NUNCA subir
+.env
+cookies.json
+session_data/
+
+# Datos scrapeados
+output/
+*.json
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
