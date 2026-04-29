@@ -1,69 +1,48 @@
-# Instagram Scraper
+## ¿Qué hace el programa?
 
-Scraper de perfiles de Instagram usando Playwright con manejo automático de sesión.
+Extrae información pública de posts de perfiles de Instagram de forma automatizada. Por cada post recolecta la fecha de publicación, el caption, la cantidad de likes, la cantidad de comentarios y las URLs de imágenes y videos. Los datos se guardan en un archivo `.json` dentro de la carpeta `output/`.
 
-## Datos que extrae por post
-- URL del post
-- Caption / descripción
-- Likes
-- Fecha de publicación
-- URLs de imágenes y videos
-- Comentarios visibles (hasta 20)
+---
 
-## Instalación
+## ¿Cómo funciona el scraping?
 
+1. **Autenticación**: El programa inicia sesión con las credenciales de Instagram y guarda las cookies en `cookies.json` para no tener que loguearse en cada ejecución. Si la cuenta principal está bloqueada o suspendida, cambia automáticamente a una cuenta de respaldo.
+
+2. **Recolección de URLs**: Visita el perfil indicado y hace scroll hacia abajo para recolectar los enlaces de los posts hasta alcanzar el número configurado.
+
+3. **Extracción de datos**: Entra a cada post individualmente y extrae la información desde la etiqueta meta `og:description` que Instagram incluye en el HTML, lo que hace la extracción más estable que depender del DOM visual.
+
+4. **Pausas aleatorias** — Entre cada acción se introducen delays aleatorios para imitar comportamiento humano y reducir la probabilidad de bloqueos.
+
+## Librerías utilizadas
+Librería: Uso
+`playwright`: Automatización del navegador (navegación, clicks, scroll) 
+`python-dotenv`: Lectura de credenciales desde el archivo `.env` 
+`re`: Expresiones regulares para extraer likes y comentarios 
+`json`: Serialización de datos y manejo de cookies 
+`pathlib`: Manejo de rutas de archivos 
+
+> No se usa BeautifulSoup ni Selenium. Playwright fue elegido por su mayor estabilidad con sitios modernos que renderizan con JavaScript.
+
+## ¿Cómo ejecutarlo?
+
+**1. Instalar dependencias**
 ```bash
-# 1. Clonar el repo e instalar dependencias
-pip install -r requirements.txt
+pip install playwright python-dotenv
 playwright install chromium
-
-# 2. Configurar credenciales
-cp .env.example .env
-# Edita .env con tu usuario y contraseña de Instagram
 ```
 
-## Configuración
-
-Edita el archivo `.env`:
-```
+**2. Configurar credenciales** — Crea un archivo `.env` en la raíz del proyecto:
+```env
 INSTAGRAM_USERNAME=tu_usuario
 INSTAGRAM_PASSWORD=tu_contraseña
+INSTAGRAM_USERNAME_BACKUP=usuario_respaldo
+INSTAGRAM_PASSWORD_BACKUP=contraseña_respaldo
 ```
 
-Edita la variable `TARGET_PROFILE` en `scraper.py`:
-```python
-TARGET_PROFILE = "https://www.instagram.com/el_perfil_que_quieras/"
-```
-
-## Uso
-
+**3. Ejecutar**
 ```bash
-python scraper.py
+python main.py
 ```
 
-El script te preguntará cuántos posts extraer. Los resultados se guardan en `output/`.
-
-## Estructura del JSON de salida
-
-```json
-[
-  {
-    "url": "https://www.instagram.com/p/ABC123/",
-    "scraped_at": "2024-01-15T10:30:00Z",
-    "caption": "Texto del post...",
-    "likes": "1,234 Me gusta",
-    "comments_count": null,
-    "date": "2024-01-10T08:00:00.000Z",
-    "media_urls": ["https://...jpg"],
-    "comments": ["Comentario 1", "Comentario 2"]
-  }
-]
-```
-
-## Notas importantes
-
-- Usa una cuenta secundaria, no tu cuenta principal
-- El scraper incluye delays aleatorios para evitar detección
-- Las cookies se reutilizan para no hacer login en cada ejecución
-- Si la sesión expira, el scraper hace login automáticamente
-- `headless=False` está activado por defecto (ves el navegador) — cámbialo a `True` cuando estés seguro de que funciona
+El programa pedirá el enlace del perfil a scrapear y extraerá 2 posts por defecto. Los resultados se guardarán en `output/`.
